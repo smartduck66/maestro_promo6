@@ -1,10 +1,32 @@
-<script setup lang="ts"></script>
-import DataTable from 'primevue/datatable';
-import Column from 'primevue/column';
-import ColumnGroup from 'primevue/columngroup';   // optional
-import Row from 'primevue/row';                   // optional
+<script setup lang="ts">
+import DataTable from "primevue/datatable";
+import Column from "primevue/column";
+import { ref, onMounted } from 'vue';
+import { ProductService } from "./service/ProductService.js";
+
+onMounted(() => {
+    ProductService.getProductsMini().then((data: any) => (products.value = data));
+});
+
+const products = ref();
+
+
+
+</script>
+
 <template>
   <img src="/masthead_reduced.jpg" alt="Prestashop" />
+
+  <div class="card">
+        <DataTable :value="products" tableStyle="min-width: 50rem">
+            <Column field="nom" header="Nom du tarif"></Column>
+            <Column field="tarif" header="Type de tarif"></Column>
+            <Column field="zone" header="Zone de livraison"></Column>
+            <Column field="colis" header="Type de colis"></Column>
+            <Column field="status" header="Statut"></Column>
+            <Column field="freeshipping" header="Livraison gratuite"></Column>
+        </DataTable>
+    </div>
 </template>
 
 <style scoped>
