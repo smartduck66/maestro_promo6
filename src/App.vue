@@ -1,5 +1,8 @@
 <script setup lang="ts"></script>
-
+import DataTable from 'primevue/datatable';
+import Column from 'primevue/column';
+import ColumnGroup from 'primevue/columngroup';   // optional
+import Row from 'primevue/row';                   // optional
 <template>
   <img src="/masthead_reduced.jpg" alt="Prestashop" />
 </template>
