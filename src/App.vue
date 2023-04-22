@@ -36,6 +36,11 @@ const volume_max = ref();
 const gamme_produits = ref("");
 const produits = ref([{ name: "Petits objets" }, { name: "Objets de taille moyenne" }, { name: "Objets volumineux" }]);
 
+const prix = ref();
+
+const transporteur = ref("");
+const liste_transporteurs = ref([{ name: "La Poste" }, { name: "Colissimo" }, { name: "Chronopost" }, { name: "DHL" }, { name: "UPS" }, { name: "FEDEX" }]);
+
 function poids_taille_displayed() {
   switch (Object(gamme_produits.value).name) {
     case "Petits objets":
@@ -54,6 +59,31 @@ function poids_taille_displayed() {
       break;
   }
 }
+
+function prix_displayed() {
+  switch (Object(transporteur.value).name) {
+    case "La Poste":
+      prix.value = 5;
+      break;
+    case "Colissimo":
+      prix.value = 35;
+      break;
+    case "Chronopost":
+      prix.value = 50;
+      break;
+    case "DHL":
+      prix.value = 80;
+      break;
+    case "UPS":
+      prix.value = 90;
+      break;
+    case "FEDEX":
+      prix.value = 100;
+      break;
+    default:
+      break;
+  }
+}
 </script>
 
 <template>
@@ -62,7 +92,7 @@ function poids_taille_displayed() {
   <div class="card">
     <DataTable :value="products" tableStyle="min-width: 50rem">
       <Column field="nom" header="Nom du tarif" sortable></Column>
-      <Column field="tarif" header="Type de tarif" sortable></Column>
+      <Column field="tarif" header="Prix" sortable></Column>
       <Column field="zone" header="Zone" sortable></Column>
       <Column field="delai" header="Délai" sortable></Column>
       <Column field="mode" header="Mode" sortable></Column>
@@ -134,6 +164,28 @@ function poids_taille_displayed() {
           <InputText v-model.number="volume_max" />
           <Slider v-model="volume_max" />
         </div>
+        <div class="c-item_panel-1">
+          <div>Prix (€) :</div>
+        </div>
+        <div class="c-item_panel-2">
+          <InputText v-model.number="prix" />
+          <Slider v-model="prix" />
+        </div>
+        <div class="c-item_panel-3">
+          <div>
+            Transporteur :
+            <Dropdown
+              v-model="transporteur"
+              class="p-inputtext-sm"
+              :options="liste_transporteurs"
+              optionLabel="name"
+              placeholder="Sélectionner un transporteur"
+            />
+          </div>
+        </div>
+        <div class="c-item_panel-4">
+          <button class="CTA1" @click="prix_displayed()">Mise à jour du prix</button>
+        </div>
       </div>
     </Panel>
   </div>
@@ -200,7 +252,7 @@ function poids_taille_displayed() {
 
 .my_grid_panel {
   display: grid;
-  grid-template-columns: 200px 400px 350px 200px;
+  grid-template-columns: 200px 400px 370px 200px;
   grid-template-rows: 40px;
   margin-bottom: 10px;
   row-gap: 20px;

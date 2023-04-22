@@ -3,7 +3,7 @@ export const ProductService = {
         return [
             {
                 nom: 'Standard France',
-                tarif: 'Unique',
+                tarif: '5 €',
                 zone: 'FR',
                 delai: '1 jour',
                 mode: 'A domicile',
@@ -13,7 +13,7 @@ export const ProductService = {
             },
             {
                 nom: 'Colis volumineux France',
-                tarif: 'Unique',
+                tarif: '50 €',
                 zone: 'FR',
                 delai: '3 jours',
                 mode: 'A domicile',
@@ -23,7 +23,7 @@ export const ProductService = {
             },
             {
                 nom: 'Standard Europe',
-                tarif: 'Variable',
+                tarif: '25 €',
                 zone: 'EU',
                 delai: '2 jours',
                 mode: 'A domicile',
@@ -33,7 +33,7 @@ export const ProductService = {
             },
             {
                 nom: 'Black Friday France',
-                tarif: 'Unique',
+                tarif: '0 €',
                 zone: 'FR',
                 delai: '1 jour',
                 mode: 'Point relai',
