@@ -19,7 +19,7 @@ onMounted(() => {
 const products = ref();
 const nom_tarif = ref();
 const statut = ref(true);
-const free_shipping=ref(false);
+const free_shipping = ref(false);
 
 const zone_livraison = ref();
 const zones = ref([{ name: "France" }, { name: "EU" }, { name: "Monde" }]);
@@ -32,6 +32,28 @@ const modes = ref([{ name: "A domicile" }, { name: "Point relai" }]);
 
 const poids_max = ref();
 const volume_max = ref();
+
+const gamme_produits = ref("");
+const produits = ref([{ name: "Petits objets" }, { name: "Objets de taille moyenne" }, { name: "Objets volumineux" }]);
+
+function poids_taille_displayed() {
+  switch (Object(gamme_produits.value).name) {
+    case "Petits objets":
+      poids_max.value = 1;
+      volume_max.value = 10;
+      break;
+    case "Objets de taille moyenne":
+      poids_max.value = 50;
+      volume_max.value = 50;
+      break;
+    case "Objets volumineux":
+      poids_max.value = 100;
+      volume_max.value = 100;
+      break;
+    default:
+      break;
+  }
+}
 </script>
 
 <template>
@@ -96,6 +118,15 @@ const volume_max = ref();
           <InputText v-model.number="poids_max" />
           <Slider v-model="poids_max" />
         </div>
+        <div class="c-item_panel-3">
+          <div>
+            Mes produits :
+            <Dropdown v-model="gamme_produits" class="p-inputtext-sm" :options="produits" optionLabel="name" placeholder="Sélectionner une gamme" />
+          </div>
+        </div>
+        <div class="c-item_panel-4">
+          <button class="CTA1" @click="poids_taille_displayed()">Mise à jour poids/volume</button>
+        </div>
         <div class="c-item_panel-1">
           <div>Volume maximum (cm3) :</div>
         </div>
@@ -129,6 +160,28 @@ const volume_max = ref();
   color: white;
   background-color: #5a42b9;
 }
+
+.CTA1 {
+  background-color: transparent;
+  background-repeat: no-repeat;
+  width: 220px;
+  height: 30px;
+  margin: 10px 20px 0 0;
+  padding: 2px 10px 0;
+  border-radius: 24px;
+  border: none;
+  font-family: Arial, Helvetica, sans-serif;
+  font-size: 16px;
+  font-weight: normal;
+  font-stretch: normal;
+  font-style: normal;
+  line-height: 1.29;
+  letter-spacing: normal;
+  text-align: center;
+  color: white;
+  background-color: #9c27b0;
+  margin-top: 5px;
+}
 .my_grid {
   display: grid;
   grid-template-columns: auto;
@@ -147,7 +200,7 @@ const volume_max = ref();
 
 .my_grid_panel {
   display: grid;
-  grid-template-columns: 200px 400px 200px 200px;
+  grid-template-columns: 200px 400px 350px 200px;
   grid-template-rows: 40px;
   margin-bottom: 10px;
   row-gap: 20px;

@@ -7,7 +7,17 @@ export const ProductService = {
                 zone: 'FR',
                 delai: '1 jour',
                 mode: 'A domicile',
-                colis: '<10kg <10cm3',
+                colis: '<1kg <10cm3',
+                status: 'actif',
+                freeshipping: 'Non'
+            },
+            {
+                nom: 'Colis volumineux France',
+                tarif: 'Unique',
+                zone: 'FR',
+                delai: '3 jours',
+                mode: 'A domicile',
+                colis: '>50kg >50cm3',
                 status: 'actif',
                 freeshipping: 'Non'
             },
@@ -17,7 +27,7 @@ export const ProductService = {
                 zone: 'EU',
                 delai: '2 jours',
                 mode: 'A domicile',
-                colis: '<50kg <100cm3',
+                colis: '<50kg <50cm3',
                 status: 'actif',
                 freeshipping: 'Non'
             },
@@ -27,7 +37,7 @@ export const ProductService = {
                 zone: 'FR',
                 delai: '1 jour',
                 mode: 'Point relai',
-                colis: '<20kg <50cm3',
+                colis: '<50kg <50cm3',
                 status: 'inactif',
                 freeshipping: 'Oui'
             }
