@@ -4,6 +4,8 @@ import Column from "primevue/column";
 import Panel from "primevue/panel";
 import Dropdown from "primevue/dropdown";
 import InputText from "primevue/inputtext";
+import Checkbox from "primevue/checkbox";
+import Slider from "primevue/slider";
 import { ref, onMounted } from "vue";
 import { ProductService } from "./service/ProductService.js";
 import Masthead from "./components/Masthead.vue";
@@ -16,6 +18,8 @@ onMounted(() => {
 
 const products = ref();
 const nom_tarif = ref();
+const statut = ref(true);
+const free_shipping=ref(false);
 
 const zone_livraison = ref();
 const zones = ref([{ name: "France" }, { name: "EU" }, { name: "Monde" }]);
@@ -25,6 +29,9 @@ const delais = ref([{ name: "1 jour" }, { name: "2 jours" }, { name: "3 jours" }
 
 const mode_livraison = ref();
 const modes = ref([{ name: "A domicile" }, { name: "Point relai" }]);
+
+const poids_max = ref();
+const volume_max = ref();
 </script>
 
 <template>
@@ -49,7 +56,7 @@ const modes = ref([{ name: "A domicile" }, { name: "Point relai" }]);
     </div>
   </div>
 
-  <div v-if="visible">
+  <div v-if="visible" class="panel">
     <Panel header="Création d'un nouveau tarif de livraison">
       <div class="my_grid_panel">
         <div class="c-item_panel-1">
@@ -57,6 +64,12 @@ const modes = ref([{ name: "A domicile" }, { name: "Point relai" }]);
         </div>
         <div class="c-item_panel-2">
           <InputText v-model="nom_tarif" class="p-inputtext-sm" type="text" placeholder="ex : Standard France" />
+        </div>
+        <div class="c-item_panel-3">
+          <div>Tarif actif : <Checkbox v-model="statut" :binary="true" /></div>
+        </div>
+        <div class="c-item_panel-4">
+          <div>Gratuité du tarif : <Checkbox v-model="free_shipping" :binary="true" /></div>
         </div>
         <div class="c-item_panel-1">
           <div>Zone de livraison :</div>
@@ -75,6 +88,20 @@ const modes = ref([{ name: "A domicile" }, { name: "Point relai" }]);
         </div>
         <div class="c-item_panel-2">
           <Dropdown v-model="mode_livraison" class="p-inputtext-sm" :options="modes" optionLabel="name" placeholder="Sélectionner un mode de livraison" />
+        </div>
+        <div class="c-item_panel-1">
+          <div>Poids maximum (kg) :</div>
+        </div>
+        <div class="c-item_panel-2">
+          <InputText v-model.number="poids_max" />
+          <Slider v-model="poids_max" />
+        </div>
+        <div class="c-item_panel-1">
+          <div>Volume maximum (cm3) :</div>
+        </div>
+        <div class="c-item_panel-2">
+          <InputText v-model.number="volume_max" />
+          <Slider v-model="volume_max" />
         </div>
       </div>
     </Panel>
@@ -120,9 +147,9 @@ const modes = ref([{ name: "A domicile" }, { name: "Point relai" }]);
 
 .my_grid_panel {
   display: grid;
-  grid-template-columns: 180px 200px;
+  grid-template-columns: 200px 400px 200px 200px;
   grid-template-rows: 40px;
-  margin-bottom: 50px;
+  margin-bottom: 10px;
   row-gap: 20px;
 }
 
@@ -133,10 +160,23 @@ const modes = ref([{ name: "A domicile" }, { name: "Point relai" }]);
 .c-item_panel-1 {
   grid-column: 1;
   justify-content: left;
-  margin-top:10px;
+  margin-top: 10px;
 }
 .c-item_panel-2 {
   grid-column: 2;
   justify-content: left;
+}
+
+.c-item_panel-3 {
+  grid-column: 3;
+  justify-content: left;
+}
+
+.c-item_panel-4 {
+  grid-column: 4;
+  justify-content: left;
+}
+.panel {
+  margin-bottom: 20px;
 }
 </style>
