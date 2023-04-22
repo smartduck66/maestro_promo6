@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref } from "vue";
 
-const open = ref(false); //gestion de la fenêtre modale des sources de données
+const open = ref(false); //gestion de la fenêtre modale d'aide
 </script>
 
 <template>
@@ -15,7 +15,7 @@ const open = ref(false); //gestion de la fenêtre modale des sources de données
           <span class="sous-titre">Liste des modes de livraison</span>
         </div>
         <div class="c-item-2">
-          <button class="CTA" @click="open = true">Créer un nouveau tarif</button>
+          <button class="CTA" @click="open = true">A propos</button>
         </div>
       </div>
     </div>
@@ -26,8 +26,16 @@ const open = ref(false); //gestion de la fenêtre modale des sources de données
         <img src="/close.webp" class="Close" />
       </div>
       <div class="FlexWrapper_modal">
-        <h2>New tarif</h2>
-        
+        <h2>Maestro - Promo #6</h2>
+        Ce prototype constitue la proposition du Groupe 5 pour le projet de fin de formation. Notre parti-pris, tiré des opportunités de la journey map :
+        <br /><br />
+        . Un back-office épuré, plus simple, sur un seul écran<br />
+        . Un utilisateur mieux guidé<br />
+        . La suppression de champs inutiles<br />
+        <br /><br />
+        Anass, André, Maimouna, Mathilde
+        <br /><br />
+        28 avril 2023
       </div>
     </div>
   </Teleport>
@@ -50,7 +58,7 @@ a {
   justify-content: flex-start;
   align-items: start;
   gap: 30px;
-  margin-bottom: 20px;
+  margin-bottom: 40px;
   margin-top: 20px;
   margin-left:35px;
 }
@@ -108,7 +116,7 @@ a {
   top: 10%;
   left: 43.5%;
   margin-left: -150px;
-  width: 360px;
+  width: 350px;
   height: 450px;
   flex-grow: 0;
   border-radius: 10px;
@@ -146,7 +154,7 @@ img.Close {
 .CTA {
   background-color: transparent;
   background-repeat: no-repeat;
-  width: 250px;
+  width: 120px;
   height: 30px;
   margin: 10px 20px 0 0;
   padding: 2px 10px 0;
