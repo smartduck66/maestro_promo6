@@ -187,6 +187,7 @@ function prix_displayed() {
           <button class="CTA1" @click="prix_displayed()">Mise à jour du prix</button>
         </div>
       </div>
+      <div class="FlexWrapper"><button class="CTA2" @click="visible = false">Sauvegarder le nouveau tarif</button></div>
     </Panel>
   </div>
 </template>
@@ -233,6 +234,28 @@ function prix_displayed() {
   color: white;
   background-color: #9c27b0;
   margin-top: 5px;
+}
+
+.CTA2 {
+  background-color: transparent;
+  background-repeat: no-repeat;
+  width: 280px;
+  height: 30px;
+  margin: 10px 20px 0 0;
+  padding: 2px 10px 0;
+  border-radius: 24px;
+  border: none;
+  font-family: Arial, Helvetica, sans-serif;
+  font-size: 16px;
+  font-weight: normal;
+  font-stretch: normal;
+  font-style: normal;
+  line-height: 1.29;
+  letter-spacing: normal;
+  text-align: center;
+  color: white;
+  background-color: #5a42b9;
+  margin-top: 40px;
 }
 .my_grid {
   display: grid;
@@ -283,5 +306,17 @@ function prix_displayed() {
 }
 .panel {
   margin-bottom: 20px;
+}
+
+.FlexWrapper {
+  width: 1280px;
+  height: auto;
+  flex-grow: 0;
+  display: flex;
+  flex-wrap: wrap;
+  flex-direction: row;
+  justify-content: flex-end;
+  margin-top: 10px;
+  padding-right: 70px;
 }
 </style>
