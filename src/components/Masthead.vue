@@ -59,7 +59,7 @@ a {
   align-items: start;
   gap: 30px;
   margin-bottom: 40px;
-  margin-top: 20px;
+  margin-top: 10px;
   margin-left:35px;
 }
 

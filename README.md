@@ -14,12 +14,8 @@ Pour construire le site statique (->dist) qui sera publié sur Netlify :
 . git push
 . Netlify le publie automatiquement en production sur https://jocular-crumble-50ffeb.netlify.app/
 
-
-
-
 Installations de modules NPM complémentaires :
 
 - PrimeVue : npm i primevue (composants graphiques)
 - PrimeIcons : npm install primeicons
-- Sharp : npm install sharp (package utilisé dans le script webp.cjs pour transformer en masse les images png/jpg en webp)
 
