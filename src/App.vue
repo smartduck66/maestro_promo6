@@ -3,6 +3,7 @@ import DataTable from "primevue/datatable";
 import Column from "primevue/column";
 import { ref, onMounted } from 'vue';
 import { ProductService } from "./service/ProductService.js";
+import Masthead from "./components/Masthead.vue";
 
 onMounted(() => {
     ProductService.getProductsMini().then((data: any) => (products.value = data));
@@ -10,21 +11,20 @@ onMounted(() => {
 
 const products = ref();
 
-
-
 </script>
 
 <template>
-  <img src="/masthead_reduced.jpg" alt="Prestashop" />
+  <Masthead />
 
   <div class="card">
         <DataTable :value="products" tableStyle="min-width: 50rem">
-            <Column field="nom" header="Nom du tarif"></Column>
-            <Column field="tarif" header="Type de tarif"></Column>
-            <Column field="zone" header="Zone de livraison"></Column>
-            <Column field="colis" header="Type de colis"></Column>
-            <Column field="status" header="Statut"></Column>
-            <Column field="freeshipping" header="Livraison gratuite"></Column>
+            <Column field="nom" header="Nom du tarif" sortable ></Column>
+            <Column field="tarif" header="Type de tarif" sortable ></Column>
+            <Column field="zone" header="Zone de livraison" sortable ></Column>
+            <Column field="delai" header="Délai de livraison" sortable ></Column>
+            <Column field="colis" header="Type de colis" sortable ></Column>
+            <Column field="status" header="Statut" sortable ></Column>
+            <Column field="freeshipping" header="Livraison gratuite" sortable ></Column>
         </DataTable>
     </div>
 </template>
