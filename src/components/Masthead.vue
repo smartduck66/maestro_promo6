@@ -12,7 +12,7 @@ const open = ref(false); //gestion de la fenêtre modale d'aide
       <div class="my_grid">
         <div class="c-item-1">
           <span class="titre">Carriers</span>
-          <span class="sous-titre">Liste des modes de livraison</span>
+          <span class="sous-titre">Liste des tarifs de livraison</span>
         </div>
         <div class="c-item-2">
           <button class="CTA" @click="open = true">A propos</button>
