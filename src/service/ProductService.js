@@ -5,11 +5,19 @@ export const ProductService = {
                 nom: 'Standard France',
                 tarif: '5 €',
                 zone: 'FR',
+                delai: '2 jours',
+                mode: 'A domicile',
+                colis: '<1kg <10cm3',
+                status: 'actif'
+            },
+            {
+                nom: 'Express France',
+                tarif: '15 €',
+                zone: 'FR',
                 delai: '1 jour',
                 mode: 'A domicile',
                 colis: '<1kg <10cm3',
-                status: 'actif',
-                freeshipping: 'Non'
+                status: 'actif'
             },
             {
                 nom: 'Colis volumineux France',
@@ -18,8 +26,16 @@ export const ProductService = {
                 delai: '3 jours',
                 mode: 'A domicile',
                 colis: '>50kg >50cm3',
-                status: 'actif',
-                freeshipping: 'Non'
+                status: 'actif'
+            },
+            {
+                nom: 'Livraison gratuite France',
+                tarif: '0 €',
+                zone: 'FR',
+                delai: '1 jour',
+                mode: 'Point relai',
+                colis: '<50kg <50cm3',
+                status: 'actif'
             },
             {
                 nom: 'Standard Europe',
@@ -28,8 +44,34 @@ export const ProductService = {
                 delai: '2 jours',
                 mode: 'A domicile',
                 colis: '<50kg <50cm3',
-                status: 'actif',
-                freeshipping: 'Non'
+                status: 'actif'
+            },
+            {
+                nom: 'Colis moyen Europe',
+                tarif: '35 €',
+                zone: 'EU',
+                delai: '2 jours',
+                mode: 'A domicile',
+                colis: '<50kg <50cm3',
+                status: 'actif'
+            },
+            {
+                nom: 'Standard International',
+                tarif: '60 €',
+                zone: 'Monde',
+                delai: '5 jours',
+                mode: 'A domicile',
+                colis: '<50kg <50cm3',
+                status: 'actif'
+            },
+            {
+                nom: 'Express International',
+                tarif: '100 €',
+                zone: 'Monde',
+                delai: '2 jours',
+                mode: 'A domicile',
+                colis: '<50kg <50cm3',
+                status: 'actif'
             },
             {
                 nom: 'Black Friday France',
@@ -38,8 +80,7 @@ export const ProductService = {
                 delai: '1 jour',
                 mode: 'Point relai',
                 colis: '<50kg <50cm3',
-                status: 'inactif',
-                freeshipping: 'Oui'
+                status: 'inactif'
             }
         ];
     },

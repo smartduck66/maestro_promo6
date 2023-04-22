@@ -13,13 +13,12 @@ import Masthead from "./components/Masthead.vue";
 const visible = ref(false); // Gestion de la visibilité de la zone de création d'un nouveau tarif
 
 onMounted(() => {
-  ProductService.getProductsMini().then((data: any) => (products.value = data));
+  ProductService.getProducts().then((data: any) => (products.value = data));
 });
 
 const products = ref();
 const nom_tarif = ref();
 const statut = ref(true);
-const free_shipping = ref(false);
 
 const zone_livraison = ref();
 const zones = ref([{ name: "France" }, { name: "EU" }, { name: "Monde" }]);
@@ -38,8 +37,16 @@ const produits = ref([{ name: "Petits objets" }, { name: "Objets de taille moyen
 
 const prix = ref();
 
-const transporteur = ref("");
-const liste_transporteurs = ref([{ name: "La Poste" }, { name: "Colissimo" }, { name: "Chronopost" }, { name: "DHL" }, { name: "UPS" }, { name: "FEDEX" }]);
+const transporteurs = ref([
+  { name: "La Poste", price: 3, diff: 0 },
+  { name: "Colissimo", price: 5, diff: 0 },
+  { name: "Chronopost", price: 10, diff: 0 },
+  { name: "DHL", price: 15, diff: 0 },
+  { name: "UPS", price: 20, diff: 0 },
+  { name: "FEDEX", price: 25, diff: 0 },
+]);
+
+const visible_tarifs_transporteurs = ref(false);
 
 function poids_taille_displayed() {
   switch (Object(gamme_produits.value).name) {
@@ -61,28 +68,13 @@ function poids_taille_displayed() {
 }
 
 function prix_displayed() {
-  switch (Object(transporteur.value).name) {
-    case "La Poste":
-      prix.value = 5;
-      break;
-    case "Colissimo":
-      prix.value = 35;
-      break;
-    case "Chronopost":
-      prix.value = 50;
-      break;
-    case "DHL":
-      prix.value = 80;
-      break;
-    case "UPS":
-      prix.value = 90;
-      break;
-    case "FEDEX":
-      prix.value = 100;
-      break;
-    default:
-      break;
-  }
+  //GUARD
+  const prix_saisi = prix.value ? prix.value : 0;
+
+  transporteurs.value.map((item: any) => {
+    item.diff = prix_saisi-item.price ;
+  });
+  visible_tarifs_transporteurs.value = true;
 }
 </script>
 
@@ -98,7 +90,6 @@ function prix_displayed() {
       <Column field="mode" header="Mode" sortable></Column>
       <Column field="colis" header="Type de colis" sortable></Column>
       <Column field="status" header="Statut" sortable></Column>
-      <Column field="freeshipping" header="Gratuité" sortable></Column>
     </DataTable>
   </div>
 
@@ -119,9 +110,6 @@ function prix_displayed() {
         </div>
         <div class="c-item_panel-3">
           <div>Tarif actif : <Checkbox v-model="statut" :binary="true" /></div>
-        </div>
-        <div class="c-item_panel-4">
-          <div>Gratuité du tarif : <Checkbox v-model="free_shipping" :binary="true" /></div>
         </div>
         <div class="c-item_panel-1">
           <div>Zone de livraison :</div>
@@ -165,28 +153,28 @@ function prix_displayed() {
           <Slider v-model="volume_max" />
         </div>
         <div class="c-item_panel-1">
-          <div>Prix (€) :</div>
+          <div>Prix client (€ TTC) :</div>
         </div>
         <div class="c-item_panel-2">
           <InputText v-model.number="prix" />
           <Slider v-model="prix" />
         </div>
         <div class="c-item_panel-3">
-          <div>
-            Transporteur :
-            <Dropdown
-              v-model="transporteur"
-              class="p-inputtext-sm"
-              :options="liste_transporteurs"
-              optionLabel="name"
-              placeholder="Sélectionner un transporteur"
-            />
+          <button class="CTA1" @click="prix_displayed()">Vérification des prix</button>
+        </div>
+        <div class="c-item_panel-1">
+          <div v-if="visible_tarifs_transporteurs">
+            <div :style="{ 'font-weight': 600 }">Tarifs du marché en fonction des critères saisis</div>
+            <br />
+            <DataTable :value="transporteurs" showGridlines tableStyle="width: 25rem">
+              <Column field="name" header="Société"></Column>
+              <Column field="price" header="Prix (€)"></Column>
+              <Column field="diff" header="Marge (€)"></Column>
+            </DataTable>
           </div>
         </div>
-        <div class="c-item_panel-4">
-          <button class="CTA1" @click="prix_displayed()">Mise à jour du prix</button>
-        </div>
       </div>
+
       <div class="FlexWrapper"><button class="CTA2" @click="visible = false">Sauvegarder le nouveau tarif</button></div>
     </Panel>
   </div>
@@ -275,7 +263,7 @@ function prix_displayed() {
 
 .my_grid_panel {
   display: grid;
-  grid-template-columns: 200px 400px 370px 200px;
+  grid-template-columns: 200px 320px 370px 200px;
   grid-template-rows: 40px;
   margin-bottom: 10px;
   row-gap: 20px;
@@ -317,6 +305,6 @@ function prix_displayed() {
   flex-direction: row;
   justify-content: flex-end;
   margin-top: 10px;
-  padding-right: 70px;
+  padding-right: 20px;
 }
 </style>
