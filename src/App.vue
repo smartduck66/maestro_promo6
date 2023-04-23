@@ -9,24 +9,27 @@ import Slider from "primevue/slider";
 import { ref, onMounted } from "vue";
 import { ProductService } from "./service/ProductService.js";
 import Masthead from "./components/Masthead.vue";
+import Toast from "primevue/toast";
+import { useToast } from "primevue/usetoast";
+const toast = useToast();
 
-const visible = ref(false); // Gestion de la visibilité de la zone de création d'un nouveau tarif
+const visible_creation = ref(false); // Gestion de la visibilité de la zone de création d'un nouveau tarif
 
 onMounted(() => {
   ProductService.getProducts().then((data: any) => (products.value = data));
 });
 
 const products = ref();
-const nom_tarif = ref();
+const nom_tarif = ref("");
 const statut = ref(true);
 
-const zone_livraison = ref();
+const zone_livraison = ref("");
 const zones = ref([{ name: "France" }, { name: "EU" }, { name: "Monde" }]);
 
-const delai_livraison = ref();
+const delai_livraison = ref("");
 const delais = ref([{ name: "1 jour" }, { name: "2 jours" }, { name: "3 jours" }, { name: "4 jours" }, { name: "5 jours" }]);
 
-const mode_livraison = ref();
+const mode_livraison = ref("");
 const modes = ref([{ name: "A domicile" }, { name: "Point relai" }]);
 
 const poids_max = ref();
@@ -37,18 +40,29 @@ const produits = ref([{ name: "Petits objets" }, { name: "Objets de taille moyen
 
 const prix = ref();
 
+// Le prix indiqué correspond au tarif de base d'une livraison : FR, délai '2j', Mode 'à domicile', Poids/dimension '<1kg <10cm3'
+const prix_base_transporteurs = [
+  { name: "La Poste", price: 6 },
+  { name: "Colissimo", price: 8 },
+  { name: "Chronopost", price: 10 },
+  { name: "DHL", price: 18 },
+  { name: "UPS", price: 20 },
+  { name: "FEDEX", price: 21 },
+];
+
 const transporteurs = ref([
-  { name: "La Poste", price: 3, diff: 0 },
-  { name: "Colissimo", price: 5, diff: 0 },
-  { name: "Chronopost", price: 10, diff: 0 },
-  { name: "DHL", price: 15, diff: 0 },
-  { name: "UPS", price: 20, diff: 0 },
-  { name: "FEDEX", price: 25, diff: 0 },
+  { name: "La Poste", price: 0, diff: 0 },
+  { name: "Colissimo", price: 0, diff: 0 },
+  { name: "Chronopost", price: 0, diff: 0 },
+  { name: "DHL", price: 0, diff: 0 },
+  { name: "UPS", price: 0, diff: 0 },
+  { name: "FEDEX", price: 0, diff: 0 },
 ]);
 
 const visible_tarifs_transporteurs = ref(false);
 
 function poids_taille_displayed() {
+  // Affichage des dimensions dans les champs à cet effet ******************************************************************************************************
   switch (Object(gamme_produits.value).name) {
     case "Petits objets":
       poids_max.value = 1;
@@ -68,18 +82,239 @@ function poids_taille_displayed() {
 }
 
 function prix_displayed() {
-  //GUARD
-  const prix_saisi = prix.value ? prix.value : 0;
+  // L'affichage des prix de chaque transporteur est fonction de son prix de base affecté de divers coefficients relatifs aux caractéristiques du transport souhaité
+  // (zone, délai, mode de livraison) et du poids/dimension du colis
+  // ***************************************************************************************************************************************************************
 
-  transporteurs.value.map((item: any) => {
-    item.diff = prix_saisi-item.price ;
-  });
-  visible_tarifs_transporteurs.value = true;
+  interface coeff {
+    name: string;
+    FR: number;
+    EU: number;
+    Monde: number;
+    j1: number;
+    j2: number;
+    j3: number;
+    j4: number;
+    j5: number;
+    Domicile: number;
+    Relai: number;
+    Petit: number;
+    Moyen: number;
+    Gros: number;
+  }
+
+  const coefficients: coeff[] = [
+    { name: "La Poste", FR: 1, EU: 1.3, Monde: 4, j1: 1.2, j2: 1, j3: 0.9, j4: 0.8, j5: 0.7, Domicile: 1, Relai: 0.9, Petit: 1, Moyen: 1.5, Gros: 3 },
+    { name: "Colissimo", FR: 1, EU: 1.2, Monde: 3, j1: 1.2, j2: 1, j3: 0.8, j4: 0.7, j5: 0.6, Domicile: 1, Relai: 0.9, Petit: 1, Moyen: 1.5, Gros: 2 },
+    { name: "Chronopost", FR: 1, EU: 1.1, Monde: 2, j1: 1.2, j2: 1, j3: 0.7, j4: 0.7, j5: 0.6, Domicile: 1, Relai: 0.9, Petit: 1, Moyen: 1.2, Gros: 1.8 },
+    { name: "DHL", FR: 1, EU: 1.05, Monde: 1.5, j1: 1.2, j2: 1, j3: 0.7, j4: 0.6, j5: 0.6, Domicile: 1, Relai: 0.9, Petit: 1, Moyen: 1.1, Gros: 1.3 },
+    { name: "UPS", FR: 1, EU: 1.2, Monde: 1.1, j1: 1.1, j2: 1, j3: 0.7, j4: 0.5, j5: 0.5, Domicile: 1, Relai: 0.9, Petit: 1, Moyen: 1.1, Gros: 1.2 },
+    { name: "FEDEX", FR: 1, EU: 1.2, Monde: 1.2, j1: 1.05, j2: 1, j3: 0.6, j4: 0.5, j5: 0.5, Domicile: 1, Relai: 0.9, Petit: 1, Moyen: 1.1, Gros: 1.2 },
+  ];
+
+  if (zone_livraison.value && delai_livraison.value && mode_livraison.value && poids_max.value && volume_max.value) {
+    //GUARD
+    const prix_saisi = prix.value ? prix.value : 0;
+
+    // Evolution du prix de référence pour chaque transporteur
+    transporteurs.value.map((item: any) => {
+      // En fonction de la zone de livraison
+      let coeff_zone: number = 0;
+      switch (Object(zone_livraison.value).name) {
+        case "France":
+          coeff_zone =
+            coefficients[
+              coefficients.findIndex(function (x) {
+                return x.name == item.name;
+              })
+            ]["FR"];
+          break;
+        case "EU":
+          coeff_zone =
+            coefficients[
+              coefficients.findIndex(function (x) {
+                return x.name == item.name;
+              })
+            ]["EU"];
+          break;
+        case "Monde":
+          coeff_zone =
+            coefficients[
+              coefficients.findIndex(function (x) {
+                return x.name == item.name;
+              })
+            ]["Monde"];
+          break;
+        default:
+          break;
+      }
+
+      // En fonction du délai de livraison
+      let coeff_delai: number = 0;
+      switch (Object(delai_livraison.value).name) {
+        case "1 jour":
+          coeff_delai =
+            coefficients[
+              coefficients.findIndex(function (x) {
+                return x.name == item.name;
+              })
+            ]["j1"];
+          break;
+        case "2 jours":
+          coeff_delai =
+            coefficients[
+              coefficients.findIndex(function (x) {
+                return x.name == item.name;
+              })
+            ]["j2"];
+          break;
+        case "3 jours":
+          coeff_delai =
+            coefficients[
+              coefficients.findIndex(function (x) {
+                return x.name == item.name;
+              })
+            ]["j3"];
+          break;
+        case "4 jours":
+          coeff_delai =
+            coefficients[
+              coefficients.findIndex(function (x) {
+                return x.name == item.name;
+              })
+            ]["j4"];
+          break;
+        case "5 jours":
+          coeff_delai =
+            coefficients[
+              coefficients.findIndex(function (x) {
+                return x.name == item.name;
+              })
+            ]["j5"];
+          break;
+        default:
+          break;
+      }
+
+      // En fonction du mode de livraison
+      let coeff_mode: number = 0;
+      switch (Object(mode_livraison.value).name) {
+        case "A domicile":
+          coeff_mode =
+            coefficients[
+              coefficients.findIndex(function (x) {
+                return x.name == item.name;
+              })
+            ]["Domicile"];
+          break;
+        case "Point relai":
+          coeff_mode =
+            coefficients[
+              coefficients.findIndex(function (x) {
+                return x.name == item.name;
+              })
+            ]["Relai"];
+          break;
+        default:
+          break;
+      }
+
+      // En fonction du type de colis
+      let coeff_colis: number = 0;
+      let gamme_colis: string = "";
+
+      if (gamme_produits.value) {
+        gamme_colis = Object(gamme_produits.value).name; // La gamme de produits a déjà été sélectionnée
+      } else {
+        // Il faut déterminer dans quelle catégorie on classe le colis, en fonction de ses caractéristiques (on ne s'occupe que du poids pour simplifier)
+        if (poids_max.value <= 1) {
+          gamme_colis = "Petits objets";
+        } else if (poids_max.value > 1 && poids_max.value <= 50) {
+          gamme_colis = "Objets de taille moyenne";
+        } else {
+          gamme_colis = "Objets volumineux";
+        }
+      }
+
+      switch (gamme_colis) {
+        case "Petits objets":
+          coeff_colis =
+            coefficients[
+              coefficients.findIndex(function (x) {
+                return x.name == item.name;
+              })
+            ]["Petit"];
+          break;
+        case "Objets de taille moyenne":
+          coeff_colis =
+            coefficients[
+              coefficients.findIndex(function (x) {
+                return x.name == item.name;
+              })
+            ]["Moyen"];
+          break;
+        case "Objets volumineux":
+          coeff_colis =
+            coefficients[
+              coefficients.findIndex(function (x) {
+                return x.name == item.name;
+              })
+            ]["Gros"];
+          break;
+        default:
+          break;
+      }
+
+      // Le prix de base est donc recalculé en fonction des différents coefficients
+      item.price = (
+        prix_base_transporteurs[
+          prix_base_transporteurs.findIndex(function (x) {
+            return x.name == item.name;
+          })
+        ]["price"] *
+        coeff_zone *
+        coeff_delai *
+        coeff_mode *
+        coeff_colis
+      ).toFixed(2);
+
+      // Calcul de la différence entre le tarif de chaque transporteur et le prix TTC saisi par le marchand
+      item.diff = (prix_saisi - item.price).toFixed(2);
+    });
+
+    // On rend le tableau visible, les calculs ayant été réalisés
+    visible_tarifs_transporteurs.value = true;
+  } else {
+    // Si les caractéristiques de la livraison ne sont pas toutes remplies
+    toast.add({ severity: "warn", summary: "Tous les champs doivent être renseignés", detail: "Affichage des tarifs impossible", life: 2000 });
+  }
+}
+
+function save_tarif() {
+  // Sauvegarde du nouveau tarif *********************************************************************************************************************
+  if (nom_tarif.value && zone_livraison.value && delai_livraison.value && mode_livraison.value && poids_max.value && volume_max.value && prix.value) {
+    // Implémenter la sauvergarde réellement
+    toast.add({ severity: "success", summary: "Transaction réalisée !", detail: "Nouveau tarif de livraison disponible", life: 2000 });
+    nom_tarif.value = "";
+    statut.value = true;
+    zone_livraison.value = "";
+    delai_livraison.value = "";
+    mode_livraison.value = "";
+    poids_max.value = null;
+    volume_max.value = null;
+    gamme_produits.value = "";
+    prix.value = null;
+    visible_creation.value = false;
+  } else {
+    // Tous les champs doivent être remplis avant une sauvegarde
+    toast.add({ severity: "warn", summary: "Tous les champs doivent être renseignés", detail: "Sauvegarde du nouveau tarif impossible", life: 2000 });
+  }
 }
 </script>
 
 <template>
   <Masthead />
+  <Toast position="top-center" />
 
   <div class="card">
     <DataTable :value="products" tableStyle="min-width: 50rem">
@@ -95,11 +330,11 @@ function prix_displayed() {
 
   <div class="my_grid">
     <div class="c-item-1">
-      <button class="CTA" @click="visible = true">Créer un nouveau tarif</button>
+      <button class="CTA" @click="visible_creation = true">Créer un nouveau tarif</button>
     </div>
   </div>
 
-  <div v-if="visible" class="panel">
+  <div v-if="visible_creation" class="panel">
     <Panel header="Création d'un nouveau tarif de livraison">
       <div class="my_grid_panel">
         <div class="c-item_panel-1">
@@ -175,7 +410,7 @@ function prix_displayed() {
         </div>
       </div>
 
-      <div class="FlexWrapper"><button class="CTA2" @click="visible = false">Sauvegarder le nouveau tarif</button></div>
+      <div class="FlexWrapper"><button class="CTA2" @click="save_tarif()">Sauvegarder le nouveau tarif</button></div>
     </Panel>
   </div>
 </template>
