@@ -171,7 +171,7 @@ function prix_displayed() {
     transporteurs.value.map((item: any) => {
       // En fonction de la zone de livraison
       let coeff_zone: number = 0;
-      switch (Object(zone_livraison.value).name) {
+      switch (zone_livraison.value) {
         case "France":
           coeff_zone =
             coefficients[
@@ -202,7 +202,7 @@ function prix_displayed() {
 
       // En fonction du délai de livraison
       let coeff_delai: number = 0;
-      switch (Object(delai_livraison.value).name) {
+      switch (delai_livraison.value) {
         case "1 jour":
           coeff_delai =
             coefficients[
@@ -249,7 +249,7 @@ function prix_displayed() {
 
       // En fonction du mode de livraison
       let coeff_mode: number = 0;
-      switch (Object(mode_livraison.value).name) {
+      switch (mode_livraison.value) {
         case "A domicile":
           coeff_mode =
             coefficients[
