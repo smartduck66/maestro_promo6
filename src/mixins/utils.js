@@ -122,13 +122,7 @@ async function database(record, cmd, ref) {
 
     case "update":
       try {
-        const result = flattenDataKeys(
-          await client.query(
-            q.Insert(q.Ref(q.Collection("tarifs_livraison"), ref), 1, "create", {
-              data: record,
-            })
-          )
-        );
+        const result = flattenDataKeys(await client.query(q.Update(q.Ref(q.Collection("tarifs_livraison"), ref), { data: record })));
         return result;
       } catch (error) {
         return "Erreur : " + error;

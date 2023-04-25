@@ -57,7 +57,7 @@ const selectedProduct = ref();
 const onRowSelect = async (event: any) => {
   // Sélectionner une ligne du tableau permet de modifier le tarif en base
   selectedProduct.value = null;
-  const result = await database(event.data.nom, "view",null);
+  const result = await database(event.data.nom, "view", null);
 
   // On remplit les valeurs de l'écran "tarif" et on l'affiche
   nom_tarif.value = result[0].nom;
@@ -69,13 +69,13 @@ const onRowSelect = async (event: any) => {
   volume_max.value = result[0].volume_max;
   prix.value = result[0].tarif;
   visible_creation.value = true;
-  update.value = result[0].ref.id;  // On stocke la référence du record Fauna pour l'updater
+  update.value = result[0].ref.id; // On stocke la référence du record Fauna pour l'updater
 };
 
 async function load_tarifs() {
   //ProductService.getProducts().then((data: any) => (products.value = data));
   // Connexion à la base distante
-  const result = await database(null, "view",null);
+  const result = await database(null, "view", null);
 
   class product {
     nom: string;
@@ -377,15 +377,14 @@ async function save_tarif() {
     tarif_to_save.actif = statut.value;
 
     // Pas de gestion d'erreurs dans ce prototype
-    if (update.value){
-      await database(tarif_to_save, "update",update.value); 
-    }else{
-      await database(tarif_to_save, "insert",null); 
+    if (update.value) {
+      await database(tarif_to_save, "update", update.value);
+    } else {
+      await database(tarif_to_save, "insert", null);
     }
 
-
     // Message de succès et RAZ du formulaire pour une prochaine saisie
-    toast.add({ severity: "success", summary: "Transaction réalisée !", detail: "Nouveau tarif de livraison disponible", life: 2000 });
+    toast.add({ severity: "success", summary: "Transaction réalisée !", detail: "Tarif de livraison disponible", life: 2000 });
     nom_tarif.value = "";
     statut.value = true;
     zone_livraison.value = "";
