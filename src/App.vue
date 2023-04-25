@@ -7,7 +7,8 @@ import InputText from "primevue/inputtext";
 import Checkbox from "primevue/checkbox";
 import Slider from "primevue/slider";
 import { ref, onMounted } from "vue";
-import { ProductService } from "./service/ProductService.js";
+//import { ProductService } from "./mixins/ProductService.js";
+import { database } from "./mixins/utils.js";
 import Masthead from "./components/Masthead.vue";
 import Toast from "primevue/toast";
 import { useToast } from "primevue/usetoast";
@@ -15,9 +16,7 @@ const toast = useToast();
 
 const visible_creation = ref(false); // Gestion de la visibilité de la zone de création d'un nouveau tarif
 
-onMounted(() => {
-  ProductService.getProducts().then((data: any) => (products.value = data));
-});
+onMounted(async () => load_tarifs());
 
 const products = ref();
 const nom_tarif = ref("");
@@ -60,6 +59,46 @@ const transporteurs = ref([
 ]);
 
 const visible_tarifs_transporteurs = ref(false);
+
+async function load_tarifs() {
+  //ProductService.getProducts().then((data: any) => (products.value = data));
+  // Connexion à la base distante
+  const result = await database(null, "view");
+
+  class product {
+    nom: string;
+    tarif: string;
+    zone: string;
+    delai: string;
+    mode: string;
+    colis: string;
+    status: string;
+
+    constructor() {
+      this.nom = "";
+      this.tarif = "";
+      this.zone = "";
+      this.delai = "";
+      this.mode = "";
+      this.colis = "";
+      this.status = "";
+    }
+  }
+
+  // Mapping des records de la database avec l'objet 'products'
+  products.value = result.map((item: any) => {
+    const p = new product(); // note the "new" keyword here
+    p.nom = item.nom;
+    p.tarif = item.tarif + " €";
+    p.zone = item.zone;
+    p.delai = item.delai + (item.delai > 1 ? " jours" : " jour");
+    p.mode = item.mode;
+    p.colis = "<" + item.poids_max + "kg <" + item.volume_max + "cm3";
+    p.status = item.actif ? "actif" : "inactif";
+
+    return p;
+  });
+}
 
 function poids_taille_displayed() {
   // Affichage des dimensions dans les champs à cet effet ******************************************************************************************************
@@ -290,10 +329,44 @@ function prix_displayed() {
   }
 }
 
-function save_tarif() {
+async function save_tarif() {
   // Sauvegarde du nouveau tarif *********************************************************************************************************************
   if (nom_tarif.value && zone_livraison.value && delai_livraison.value && mode_livraison.value && poids_max.value && volume_max.value && prix.value) {
-    // Implémenter la sauvergarde réellement
+    // Sauvegarde des données en base
+    class tarif_livraison {
+      nom: string;
+      tarif: number;
+      zone: string;
+      delai: number;
+      mode: string;
+      poids_max: number;
+      volume_max: number;
+      actif: boolean;
+
+      constructor() {
+        this.nom = "";
+        this.tarif = 0;
+        this.zone = "";
+        this.delai = 0;
+        this.mode = "";
+        this.poids_max = 0;
+        this.volume_max = 0;
+        this.actif = true;
+      }
+    }
+    const tarif_to_save = new tarif_livraison(); // note the "new" keyword here
+    tarif_to_save.nom = nom_tarif.value;
+    tarif_to_save.tarif = prix.value;
+    tarif_to_save.zone = Object(zone_livraison.value).name;
+    tarif_to_save.delai = Number(Object(delai_livraison.value).name.substring(0, 1));
+    tarif_to_save.mode = Object(mode_livraison.value).name;
+    tarif_to_save.poids_max = poids_max.value;
+    tarif_to_save.volume_max = volume_max.value;
+    tarif_to_save.actif = statut.value;
+
+    await database(tarif_to_save, "insert");  // Pas de gestion d'erreurs dans ce prototype
+
+    // Message de succès et RAZ du formulaire pour une prochaine saisie
     toast.add({ severity: "success", summary: "Transaction réalisée !", detail: "Nouveau tarif de livraison disponible", life: 2000 });
     nom_tarif.value = "";
     statut.value = true;
@@ -305,6 +378,9 @@ function save_tarif() {
     gamme_produits.value = "";
     prix.value = null;
     visible_creation.value = false;
+
+    // Reload les tarifs pour raffraichir la liste
+    load_tarifs();
   } else {
     // Tous les champs doivent être remplis avant une sauvegarde
     toast.add({ severity: "warn", summary: "Tous les champs doivent être renseignés", detail: "Sauvegarde du nouveau tarif impossible", life: 2000 });

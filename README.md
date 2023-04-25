@@ -18,4 +18,6 @@ Installations de modules NPM complémentaires :
 
 - PrimeVue : npm i primevue (composants graphiques)
 - PrimeIcons : npm install primeicons
+- Faunadb : npm install --save faunadb (DB en mode serverless)
+
 

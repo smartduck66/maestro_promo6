@@ -32,6 +32,8 @@ const open = ref(false); //gestion de la fenêtre modale d'aide
         . Un back-office épuré, plus simple, sur un seul écran<br />
         . Un utilisateur mieux guidé<br />
         . La suppression de champs inutiles<br />
+        <br />
+        La base de données est limitée à 10 enregistrements.
         <br /><br />
         Anass, André, Maimouna, Mathilde
         <br /><br />
