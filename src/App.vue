@@ -3,6 +3,7 @@ import DataTable from "primevue/datatable";
 import Column from "primevue/column";
 import Panel from "primevue/panel";
 import Dropdown from "primevue/dropdown";
+import RadioButton from "primevue/radiobutton";
 import InputText from "primevue/inputtext";
 import Checkbox from "primevue/checkbox";
 import Slider from "primevue/slider";
@@ -21,23 +22,15 @@ onMounted(async () => load_tarifs());
 const products = ref();
 const nom_tarif = ref("");
 const statut = ref(true);
-
 const zone_livraison = ref("");
-const zones = ref([{ name: "France" }, { name: "EU" }, { name: "Monde" }]);
-
 const delai_livraison = ref("");
-const delais = ref([{ name: "1 jour" }, { name: "2 jours" }, { name: "3 jours" }, { name: "4 jours" }, { name: "5 jours" }]);
-
 const mode_livraison = ref("");
-const modes = ref([{ name: "A domicile" }, { name: "Point relai" }]);
-
 const poids_max = ref();
 const volume_max = ref();
-
 const gamme_produits = ref("");
 const produits = ref([{ name: "Petits objets" }, { name: "Objets de taille moyenne" }, { name: "Objets volumineux" }]);
-
 const prix = ref();
+const update = ref(null); // flag qui permet de savoir si l'on crée un tarif 'from scratch' ou si l'on modifie un tarif existant
 
 // Le prix indiqué correspond au tarif de base d'une livraison : FR, délai '2j', Mode 'à domicile', Poids/dimension '<1kg <10cm3'
 const prix_base_transporteurs = [
@@ -60,10 +53,29 @@ const transporteurs = ref([
 
 const visible_tarifs_transporteurs = ref(false);
 
+const selectedProduct = ref();
+const onRowSelect = async (event: any) => {
+  // Sélectionner une ligne du tableau permet de modifier le tarif en base
+  selectedProduct.value = null;
+  const result = await database(event.data.nom, "view",null);
+
+  // On remplit les valeurs de l'écran "tarif" et on l'affiche
+  nom_tarif.value = result[0].nom;
+  statut.value = result[0].actif;
+  zone_livraison.value = result[0].zone;
+  delai_livraison.value = result[0].delai + (result[0].delai > 1 ? " jours" : " jour");
+  mode_livraison.value = result[0].mode;
+  poids_max.value = result[0].poids_max;
+  volume_max.value = result[0].volume_max;
+  prix.value = result[0].tarif;
+  visible_creation.value = true;
+  update.value = result[0].ref.id;  // On stocke la référence du record Fauna pour l'updater
+};
+
 async function load_tarifs() {
   //ProductService.getProducts().then((data: any) => (products.value = data));
   // Connexion à la base distante
-  const result = await database(null, "view");
+  const result = await database(null, "view",null);
 
   class product {
     nom: string;
@@ -331,7 +343,7 @@ function prix_displayed() {
 
 async function save_tarif() {
   // Sauvegarde du nouveau tarif *********************************************************************************************************************
-  if (nom_tarif.value && zone_livraison.value && delai_livraison.value && mode_livraison.value && poids_max.value && volume_max.value && prix.value) {
+  if (nom_tarif.value && zone_livraison.value && delai_livraison.value && mode_livraison.value && poids_max.value && volume_max.value) {
     // Sauvegarde des données en base
     class tarif_livraison {
       nom: string;
@@ -357,14 +369,20 @@ async function save_tarif() {
     const tarif_to_save = new tarif_livraison(); // note the "new" keyword here
     tarif_to_save.nom = nom_tarif.value;
     tarif_to_save.tarif = prix.value;
-    tarif_to_save.zone = Object(zone_livraison.value).name;
-    tarif_to_save.delai = Number(Object(delai_livraison.value).name.substring(0, 1));
-    tarif_to_save.mode = Object(mode_livraison.value).name;
+    tarif_to_save.zone = zone_livraison.value;
+    tarif_to_save.delai = Number(delai_livraison.value.substring(0, 1));
+    tarif_to_save.mode = mode_livraison.value;
     tarif_to_save.poids_max = poids_max.value;
     tarif_to_save.volume_max = volume_max.value;
     tarif_to_save.actif = statut.value;
 
-    await database(tarif_to_save, "insert");  // Pas de gestion d'erreurs dans ce prototype
+    // Pas de gestion d'erreurs dans ce prototype
+    if (update.value){
+      await database(tarif_to_save, "update",update.value); 
+    }else{
+      await database(tarif_to_save, "insert",null); 
+    }
+
 
     // Message de succès et RAZ du formulaire pour une prochaine saisie
     toast.add({ severity: "success", summary: "Transaction réalisée !", detail: "Nouveau tarif de livraison disponible", life: 2000 });
@@ -377,10 +395,12 @@ async function save_tarif() {
     volume_max.value = null;
     gamme_produits.value = "";
     prix.value = null;
+    visible_tarifs_transporteurs.value = false;
     visible_creation.value = false;
 
     // Reload les tarifs pour raffraichir la liste
-    load_tarifs();
+    await load_tarifs();
+    update.value = null;
   } else {
     // Tous les champs doivent être remplis avant une sauvegarde
     toast.add({ severity: "warn", summary: "Tous les champs doivent être renseignés", detail: "Sauvegarde du nouveau tarif impossible", life: 2000 });
@@ -393,7 +413,17 @@ async function save_tarif() {
   <Toast position="top-center" />
 
   <div class="card">
-    <DataTable :value="products" tableStyle="min-width: 50rem">
+    <DataTable
+      v-model:selection="selectedProduct"
+      :value="products"
+      selectionMode="single"
+      dataKey="id"
+      :metaKeySelection="false"
+      @rowSelect="onRowSelect"
+      scrollable
+      scrollHeight="400px"
+      tableStyle="min-width: 50rem"
+    >
       <Column field="nom" header="Nom du tarif" sortable></Column>
       <Column field="tarif" header="Prix" sortable></Column>
       <Column field="zone" header="Zone" sortable></Column>
@@ -426,19 +456,42 @@ async function save_tarif() {
           <div>Zone de livraison :</div>
         </div>
         <div class="c-item_panel-2">
-          <Dropdown v-model="zone_livraison" class="p-inputtext-sm" :options="zones" optionLabel="name" placeholder="Sélectionner une zone" />
+          <div>
+            <RadioButton v-model="zone_livraison" inputId="Z1" name="livraison" value="France" />
+            <label for="Z1" class="ml-2"> France </label>
+            <RadioButton v-model="zone_livraison" inputId="Z2" name="Livraison" value="EU" />
+            <label for="Z2" class="ml-2"> EU </label>
+            <RadioButton v-model="zone_livraison" inputId="Z3" name="Livraison" value="Monde" />
+            <label for="Z3" class="ml-2"> Monde </label>
+          </div>
         </div>
         <div class="c-item_panel-1">
           <div>Délai de livraison :</div>
         </div>
         <div class="c-item_panel-2">
-          <Dropdown v-model="delai_livraison" class="p-inputtext-sm" :options="delais" optionLabel="name" placeholder="Sélectionner un délai de livraison" />
+          <div>
+            <RadioButton v-model="delai_livraison" inputId="D1" name="delai" value="1 jour" />
+            <label for="D1" class="ml-2"> 1 j </label>
+            <RadioButton v-model="delai_livraison" inputId="D2" name="delai" value="2 jours" />
+            <label for="D2" class="ml-2"> 2 j </label>
+            <RadioButton v-model="delai_livraison" inputId="D3" name="delai" value="3 jours" />
+            <label for="D3" class="ml-2"> 3 j </label>
+            <RadioButton v-model="delai_livraison" inputId="D4" name="delai" value="4 jours" />
+            <label for="D4" class="ml-2"> 4 j </label>
+            <RadioButton v-model="delai_livraison" inputId="D5" name="delai" value="5 jours" />
+            <label for="D5" class="ml-2"> 5 j </label>
+          </div>
         </div>
         <div class="c-item_panel-1">
           <div>Mode de livraison :</div>
         </div>
         <div class="c-item_panel-2">
-          <Dropdown v-model="mode_livraison" class="p-inputtext-sm" :options="modes" optionLabel="name" placeholder="Sélectionner un mode de livraison" />
+          <div>
+            <RadioButton v-model="mode_livraison" inputId="L1" name="livraison" value="A domicile" />
+            <label for="L1" class="ml-2"> A domicile </label>
+            <RadioButton v-model="mode_livraison" inputId="L2" name="Livraison" value="Point relai" />
+            <label for="L2" class="ml-2"> Point relai</label>
+          </div>
         </div>
         <div class="c-item_panel-1">
           <div>Poids maximum (kg) :</div>
@@ -486,7 +539,7 @@ async function save_tarif() {
         </div>
       </div>
 
-      <div class="FlexWrapper"><button class="CTA2" @click="save_tarif()">Sauvegarder le nouveau tarif</button></div>
+      <div class="FlexWrapper"><button class="CTA2" @click="save_tarif()">Sauvegarder le tarif</button></div>
     </Panel>
   </div>
 </template>
@@ -592,6 +645,7 @@ async function save_tarif() {
 .c-item_panel-2 {
   grid-column: 2;
   justify-content: left;
+  margin-top: 10px;
 }
 
 .c-item_panel-3 {

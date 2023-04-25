@@ -38,7 +38,11 @@ function isFunction(functionToCheck) {
   return functionToCheck && {}.toString.call(functionToCheck) === "[object Function]";
 }
 
-async function database(record, cmd) {
+async function database(record, cmd, ref) {
+  // 1er param : data à sauvegarder dans la base
+  // 2ème paream : commande (view, insert ou update)
+  // 3ème param : référence du record (ne sert que si p2 = update)
+
   // Connexion à la base distante
   const q = faunadb.query;
 
@@ -78,26 +82,49 @@ async function database(record, cmd) {
 
   switch (cmd) {
     case "view":
-      try {
-        const result = flattenDataKeys(
-          await client.query(
-            q.Map(
-              q.Paginate(q.Match(q.Index("nom"))),
-              q.Lambda((x) => q.Get(x))
+      if (record) {
+        try {
+          const result = flattenDataKeys(
+            await client.query(
+              q.Map(
+                q.Paginate(Documents(Collection("tarifs_livraison"))),
+                q.Lambda((x) => q.Get(q.Match(q.Index("nom"), record)))
+              )
             )
-          )
-        );
+          );
+          return result;
+        } catch (error) {
+          return "Erreur : " + error;
+        }
+      } else {
+        try {
+          const result = flattenDataKeys(
+            await client.query(
+              q.Map(
+                q.Paginate(q.Documents(q.Collection("tarifs_livraison"))),
+                q.Lambda((x) => q.Get(x))
+              )
+            )
+          );
+          return result;
+        } catch (error) {
+          return "Erreur : " + error;
+        }
+      }
+
+    case "insert":
+      try {
+        const result = flattenDataKeys(await client.query(q.Create(q.Collection("tarifs_livraison"), { data: record })));
         return result;
       } catch (error) {
         return "Erreur : " + error;
       }
-      break;
 
-    case "insert":
+    case "update":
       try {
         const result = flattenDataKeys(
           await client.query(
-            q.Insert(q.Ref(q.Collection('tarifs_livraison'), '181388642581742080'), 1, "create", {
+            q.Insert(q.Ref(q.Collection("tarifs_livraison"), ref), 1, "create", {
               data: record,
             })
           )
@@ -106,7 +133,6 @@ async function database(record, cmd) {
       } catch (error) {
         return "Erreur : " + error;
       }
-      break;
 
     default:
       break;
