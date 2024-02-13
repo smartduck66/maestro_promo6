@@ -1,5 +1,6 @@
 # Vue 3 + TypeScript + Vite
 # Prototype Maestro Promo 6 - Groupe 5
+# Démontré le 28 avril 2023 - Pas de développement complémentaire prévu
 
 Pour développer et tester en local :
 . npm run dev
