@@ -74,7 +74,7 @@ async function database(record, cmd, ref) {
   } = q;
 
   const client = new faunadb.Client({
-    secret: "fnAFCX5zUkAAzCptqTV0WeGCY9wvyvqrw5ChHcxH",
+    secret: "XXXXXXXXXXXXXXXXXXXXXXXXXXXXX", // A remplacer par la chaîne stockée dans fauna_secret
     domain: "db.eu.fauna.com",
     port: 443,
     scheme: "https",
